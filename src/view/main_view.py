@@ -8,3 +8,8 @@ class PolisherView(ttk.Window):
         self.title("Polisher V2")
         self.geometry('800x500')
         self.resizable(False, False)
+        self._top_bar()
+
+    def _top_bar(self):
+        self.top_frame=ttk.Frame(self, bootstyle=ttk_const.DANGER)
+        self.top_frame.pack(side=ttk_const.TOP, fill=ttk_const.X)
