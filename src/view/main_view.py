@@ -45,20 +45,31 @@ class PolisherView(ttk.Window):
         for style in button_styles:
             self.style.configure(f"{style}.TButton", font=self.BTN_FONT)
         self.style.configure("TLabel", font=self.LBL_FONT)
+        
+        # ... (کدهای قبلی استایل دکمه‌ها و لیبل‌ها) ...
+        
+        # تنظیمات اسلایدر بزرگ (برای لمس)
+        self.style.configure('TScale', sliderlength=30, sliderthickness=30, troughheight=15)
+        
+        # تنظیم فونت بزرگ برای دکمه‌های چک (اگر از حالت Toolbutton استفاده کنیم)
+        self.style.configure('Toolbutton', font=("Segoe UI", 10, "bold"))
 
         # وضعیت منو
         self.menu_visible = False
         self.side_menu_pos = -self.MENU_WIDTH
+
+
+        # دیکشنری برای دسترسی به ویجت‌های کنترل (برای Presenter)
+        self.control_widgets = {}
+        self.presenter = None  # مدیر بعدا وصل می‌شود
 
         # 2. ساختار اصلی
         self._create_toolbar()
         self._create_status_bar()
         self._create_side_menu_drawer()  # منوی مخفی
         self._create_content_frame()
-
-        # دیکشنری برای دسترسی به ویجت‌های کنترل (برای Presenter)
-        self.control_widgets = {}
-        self.presenter = None  # مدیر بعدا وصل می‌شود
+        
+        self.update_idletasks()
 
     def set_presenter(self, presenter):
         self.presenter = presenter
@@ -124,7 +135,6 @@ class PolisherView(ttk.Window):
         menu_items = [
             ("📷 Camera", ttk_const.PRIMARY, lambda: self.show_camera_view()),
             ("⏱️ Timer", ttk_const.PRIMARY, lambda: self.show_timer_view()),
-            ("⚙️ Manual", ttk_const.PRIMARY, lambda: self.show_manual_view()),
         ]
         for text, style, cmd in menu_items:
             ttk.Button(
@@ -193,6 +203,31 @@ class PolisherView(ttk.Window):
     def _create_status_bar(self):
         self.status_frame = ttk.Frame(self, bootstyle=ttk_const.SECONDARY)
         self.status_frame.pack(side=ttk_const.BOTTOM, fill=ttk_const.X)
+
+        light_container = ttk.Frame(self.status_frame, bootstyle=ttk_const.SECONDARY)
+        light_container.pack(side=ttk_const.LEFT, padx=5, pady=5)
+
+        # 1. دکمه روشن/خاموش (Toggle)
+        self.chk_light = ttk.Checkbutton(
+            light_container, 
+            text="Light", 
+            bootstyle="success-toolbutton", 
+            style="Toolbutton", # اعمال فونت بزرگی که تعریف کردیم
+            width=5
+        )
+        self.chk_light.pack(side=ttk_const.LEFT, padx=5, ipady=2)
+        self.control_widgets["light_toggle"] = self.chk_light
+
+        # 2. اسلایدر شدت نور
+        self.scale_light = ttk.Scale(
+            light_container, 
+            from_=0, 
+            to=100, 
+            bootstyle="success",
+            length=200 # عرض اسلایدر
+        )
+        self.scale_light.pack(side=ttk_const.LEFT, padx=10)
+        self.control_widgets["light_scale"] = self.scale_light
 
         self.lbl_contact_light = ttk.Label(
             self.status_frame,
@@ -353,7 +388,7 @@ class PolisherView(ttk.Window):
         btn_stop.pack(side=ttk_const.LEFT, padx=10)
 
         btn_reset = ttk.Button(
-            action_frame, text="⟳ Reset", bootstyle="primary", padding=self.BTN_PADDING
+            action_frame, text="Reset", bootstyle="primary", padding=self.BTN_PADDING
         )
         btn_reset.pack(side=ttk_const.LEFT, padx=10)
 
@@ -362,36 +397,7 @@ class PolisherView(ttk.Window):
         self.control_widgets["timer_stop"] = btn_stop
         self.control_widgets["timer_reset"] = btn_reset
 
-    def show_manual_view(self):
-        self._clear_content()
-        self._build_manual_panel()
-
-    def _build_manual_panel(self):
-        """ساخت پنل تنظیمات دستی (اسلایدرها و نور)"""
-        container = ttk.Frame(self.content_frame)
-        container.pack(expand=True, fill=ttk_const.BOTH, padx=50, pady=20)
-
-        # 1. کنترل ارتفاع
-        self._create_slider_row(container, "تنظیم ارتفاع (Height)", "manual_h")
-
-        # 2. کنترل سرعت
-        self._create_slider_row(container, "تنظیم سرعت (Speed)", "manual_s")
-
-        # 3. کنترل نور (Light)
-        light_frame = ttk.Labelframe(
-            container,
-            text="کنترل نور (Light)",
-            padding=self.BTN_PADDING,
-            bootstyle="warning",
-        )
-        light_frame.pack(fill=ttk_const.X, pady=10)
-
-        chk_light = ttk.Checkbutton(
-            light_frame, text="خاموش / روشن", bootstyle="success-round-toggle"
-        )
-        chk_light.pack(pady=5)
-        self.control_widgets["manual_light_toggle"] = chk_light
-
+    
     def _create_slider_row(self, parent, title, key_prefix):
         """تابع کمکی برای ساخت ردیف اسلایدر"""
         frame = ttk.Labelframe(

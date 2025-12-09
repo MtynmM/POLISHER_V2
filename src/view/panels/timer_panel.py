@@ -47,7 +47,7 @@ class TimerPanel:
         
         self._add_btn(btn_frame, "▶ Start", "success", "stopwatch_start")
         self._add_btn(btn_frame, "⏸ Stop", "warning", "stopwatch_stop")
-        self._add_btn(btn_frame, "⟳ Reset", "danger", "stopwatch_reset")
+        self._add_btn(btn_frame, "Reset", "danger", "stopwatch_reset")
 
     def _create_countdown(self, parent):
         container = ttk.Frame(parent)
@@ -74,7 +74,7 @@ class TimerPanel:
 
         self._add_btn(action_frame, "▶ Start", "success", "timer_start")
         self._add_btn(action_frame, "⏸ Stop", "warning", "timer_stop")
-        self._add_btn(action_frame, "⟳ Reset", "danger", "timer_reset")
+        self._add_btn(action_frame, "Reset", "danger", "timer_reset")
 
     def _create_time_column(self, parent, label_text, key_name):
         frame = ttk.Frame(parent)
