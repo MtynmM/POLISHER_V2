@@ -312,7 +312,6 @@ class PolisherView(ttk.Window):
             self.content_frame,
             self.control_widgets,
             "تنظیم گام (Step)",
-            "میکرون",
             "100",
             "step",
         )
@@ -323,7 +322,6 @@ class PolisherView(ttk.Window):
             self.content_frame,
             self.control_widgets,
             "تنظیم سرعت (Speed)",
-            "RPM",
             "100",
             "speed",
         )

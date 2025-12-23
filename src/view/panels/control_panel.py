@@ -9,11 +9,10 @@ KEYPAD_FONT = ("Segoe UI", 14, "bold")
 BTN_PADDING = (15, 10)
 
 class ControlPanel:
-    def __init__(self, parent, control_widgets, title, unit, default_value, input_key):
+    def __init__(self, parent, control_widgets, title, default_value, input_key):
         self.parent = parent
         self.widgets = control_widgets
         self.title = title
-        self.unit = unit
         self.default_value = default_value
         self.input_key = input_key
         
@@ -37,7 +36,7 @@ class ControlPanel:
         value_box = ttk.Frame(display_frame)
         value_box.pack(pady=5)
 
-        btn_minus = ttk.Button(value_box, text="−", bootstyle="warning", padding=(15, 15))
+        btn_minus = ttk.Button(value_box, text="−", bootstyle="warning", padding=(15, 10))
         btn_minus.pack(side=ttk_const.LEFT, padx=15)
 
         # لیبل نمایش عدد
@@ -53,10 +52,9 @@ class ControlPanel:
         # ذخیره لیبل
         self.widgets[self.input_key] = self.lbl_value
 
-        btn_plus = ttk.Button(value_box, text="+", bootstyle="success", padding=(15, 15))
+        btn_plus = ttk.Button(value_box, text="+", bootstyle="success", padding=(15, 10))
         btn_plus.pack(side=ttk_const.LEFT, padx=15)
 
-        ttk.Label(display_frame, text=self.unit, font=UNIT_FONT).pack(pady=0)
 
         # 3. صفحه کلید عددی (Numpad)
         keypad_frame = ttk.Frame(container)
@@ -85,8 +83,8 @@ class ControlPanel:
                 keypad_frame,
                 text=key,
                 bootstyle=style,
-                width=4,
-                padding=(8, 12),
+                width=6,
+                padding=(8, 8),
                 command=cmd
             )
             # دکمه OK را برای دسترسی Presenter ذخیره می‌کنیم (اگر نیاز به لاجیک خاص بود)
