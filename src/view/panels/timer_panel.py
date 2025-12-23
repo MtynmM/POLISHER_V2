@@ -22,8 +22,8 @@ class TimerPanel:
         stopwatch_frame = ttk.Frame(notebook, padding=20)
         timer_frame = ttk.Frame(notebook, padding=20)
         
-        notebook.add(stopwatch_frame, text="⏱️ کرنومتر (Stopwatch)")
-        notebook.add(timer_frame, text="⏲️ تایمر (Countdown)")
+        notebook.add(stopwatch_frame, text="⏱️ stopwatch (Stopwatch)")
+        notebook.add(timer_frame, text="⏲️ timer (Countdown)")
         
         self._create_stopwatch(stopwatch_frame)
         self._create_countdown(timer_frame)
@@ -56,9 +56,9 @@ class TimerPanel:
         settings_frame = ttk.Frame(container)
         settings_frame.pack(pady=10)
 
-        self._create_time_column(settings_frame, "ساعت", "h")
-        self._create_time_column(settings_frame, "دقیقه", "m")
-        self._create_time_column(settings_frame, "ثانیه", "s")
+        self._create_time_column(settings_frame, "hour", "h")
+        self._create_time_column(settings_frame, "minutes", "m")
+        self._create_time_column(settings_frame, "seconds", "s")
 
         lbl_countdown = ttk.Label(
             container, 

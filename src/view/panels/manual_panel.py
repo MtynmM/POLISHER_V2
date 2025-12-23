@@ -19,13 +19,13 @@ class ManualPanel:
         container.pack(expand=True, fill=ttk_const.BOTH, padx=50, pady=20)
         
         # عنوان
-        ttk.Label(container, text="⚙️ کنترل دستی (Manual Control)", font=("Segoe UI", 18, "bold")).pack(pady=(0, 20))
+        ttk.Label(container, text="⚙️ Manual control (Manual Control)", font=("Segoe UI", 18, "bold")).pack(pady=(0, 20))
 
         # 1. بخش تنظیم ارتفاع
-        self._create_slider_row(container, "تنظیم ارتفاع (Height)", "manual_h")
+        self._create_slider_row(container, "Height adjustment (Height)", "manual_h")
         
         # 2. بخش تنظیم سرعت
-        self._create_slider_row(container, "تنظیم سرعت (Speed)", "manual_s")
+        self._create_slider_row(container, "set speed (Speed)", "manual_s")
 
     def _create_slider_row(self, parent, title, key_prefix):
         """یک ردیف استاندارد شامل: دکمه منفی، اسلایدر، دکمه مثبت"""

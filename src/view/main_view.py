@@ -303,7 +303,7 @@ class PolisherView(ttk.Window):
         ).pack(pady=20)
 
         ttk.Label(
-            container, text="لطفاً یک گزینه را از منو انتخاب کنید", font=("Segoe UI", 20)
+            container, text="Please select an option from the menu.", font=("Segoe UI", 20)
         ).pack(pady=10)
 
     def show_step_panel(self):
@@ -311,7 +311,7 @@ class PolisherView(ttk.Window):
         ControlPanel(
             self.content_frame,
             self.control_widgets,
-            "تنظیم گام (Step)",
+            " Set step(Step)",
             "100",
             "step",
         )
@@ -321,7 +321,7 @@ class PolisherView(ttk.Window):
         ControlPanel(
             self.content_frame,
             self.control_widgets,
-            "تنظیم سرعت (Speed)",
+            "Set Speed (Speed)",
             "100",
             "speed",
         )
@@ -329,7 +329,7 @@ class PolisherView(ttk.Window):
     def show_camera_view(self):
         self._clear_content()
         ttk.Label(
-            self.content_frame, text="نمای دوربین (Camera)", font=("Segoe UI", 24)
+            self.content_frame, text="Camera (Camera)", font=("Segoe UI", 24)
         ).pack(expand=True)
 
     def show_timer_view(self):
