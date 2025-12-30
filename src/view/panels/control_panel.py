@@ -1,131 +1,117 @@
 import ttkbootstrap as ttk
 import ttkbootstrap.constants as ttk_const
 
-# --- ثابت‌های طراحی ---
-TITLE_FONT = ("Segoe UI", 24, "bold")
-VALUE_FONT = ("Segoe UI", 36, "bold")
-UNIT_FONT = ("Segoe UI", 16)
-KEYPAD_FONT = ("Segoe UI", 14, "bold")
-BTN_PADDING = (15, 10)
-
 class ControlPanel:
     def __init__(self, parent, control_widgets, title, default_value, input_key):
+        """
+        پنل ورودی عددی (Numpad) - بهینه شده برای تاچ
+        """
         self.parent = parent
         self.widgets = control_widgets
         self.title = title
-        self.default_value = default_value
+        self.default_value = str(default_value)
         self.input_key = input_key
-        
-        # متغیر موقت برای نگه داشتن عدد در حال تایپ
-        self.current_value = str(default_value)
+        self.current_value = self.default_value
 
         self._create_ui()
 
     def _create_ui(self):
-        # 1. کانتینر اصلی
         container = ttk.Frame(self.parent)
-        container.pack(expand=True, fill=ttk_const.BOTH)
+        container.pack(expand=True, fill=ttk_const.BOTH, padx=20)
 
-        # 2. بخش نمایشگر (بالا)
-        display_frame = ttk.Frame(container)
-        display_frame.pack(pady=10)
+        # --- بخش 1: نمایشگر و تیتر (بالا) ---
+        header_frame = ttk.Frame(container)
+        header_frame.pack(fill=ttk_const.X, pady=(10, 5))
 
-        ttk.Label(display_frame, text=self.title, font=TITLE_FONT).pack(pady=(10, 5))
+        ttk.Label(
+            header_frame, 
+            text=self.title, 
+            font=("Segoe UI", 16, "bold"),
+            anchor="center"
+        ).pack()
 
-        # نمایشگر عدد و دکمه‌های +/- (برای تنظیم دقیق)
-        value_box = ttk.Frame(display_frame)
-        value_box.pack(pady=5)
+        # باکس نمایش عدد + دکمه‌های تنظیم دقیق
+        display_box = ttk.Frame(header_frame)
+        display_box.pack(pady=10)
 
-        btn_minus = ttk.Button(value_box, text="−", bootstyle="warning", padding=(15, 10))
-        btn_minus.pack(side=ttk_const.LEFT, padx=15)
+        # دکمه -
+        btn_minus = ttk.Button(display_box, text="stop", bootstyle="warning-outline", width=6, padding=10)
+        btn_minus.pack(side=ttk_const.LEFT, padx=10)
 
-        # لیبل نمایش عدد
+        # خود عدد
         self.lbl_value = ttk.Label(
-            value_box,
+            display_box,
             text=self.current_value,
-            font=VALUE_FONT,
+            font=("Segoe UI", 32, "bold"), # فونت بزرگ و خوانا
             bootstyle="inverse-secondary",
-            width=6, anchor="center"
+            width=5, 
+            anchor="center"
         )
         self.lbl_value.pack(side=ttk_const.LEFT, padx=10)
         
-        # ذخیره لیبل
+        # ذخیره لیبل برای آپدیت توسط پرزنتر
         self.widgets[self.input_key] = self.lbl_value
 
-        btn_plus = ttk.Button(value_box, text="+", bootstyle="success", padding=(15, 10))
-        btn_plus.pack(side=ttk_const.LEFT, padx=15)
+        # دکمه +
+        btn_plus = ttk.Button(display_box, text="start", bootstyle="success-outline", width=6, padding=10)
+        btn_plus.pack(side=ttk_const.LEFT, padx=10)
 
+        # ثبت دکمه‌های فاین تیونینگ
+        self.widgets[f"{self.input_key}_minus"] = btn_minus
+        self.widgets[f"{self.input_key}_plus"] = btn_plus
 
-        # 3. صفحه کلید عددی (Numpad)
+        # --- بخش 2: کیبورد عددی (پایین) ---
         keypad_frame = ttk.Frame(container)
-        keypad_frame.pack(pady=10)
+        keypad_frame.pack(expand=True, fill=ttk_const.BOTH, pady=5)
 
-        # چیدمان دکمه‌ها
+        # شبکه دکمه‌ها (Grid)
         keys = [
             ('7', 0, 0), ('8', 0, 1), ('9', 0, 2),
             ('4', 1, 0), ('5', 1, 1), ('6', 1, 2),
             ('1', 2, 0), ('2', 2, 1), ('3', 2, 2),
-            ('C', 3, 0), ('0', 3, 1), ('OK', 3, 2)
+            ('Clr', 3, 0), ('0', 3, 1), ('OK', 3, 2)
         ]
 
+        # تنظیم وزن ستون‌ها و ردیف‌ها برای پر کردن فضا
+        for i in range(3): keypad_frame.columnconfigure(i, weight=1)
+        for i in range(4): keypad_frame.rowconfigure(i, weight=1)
+
         for key, row, col in keys:
+            style = "secondary"
+            cmd = lambda k=key: self._on_keypad_press(k)
+
             if key == 'OK':
-                style = "primary"
-                cmd = lambda: self._on_keypad_enter() # دکمه تایید (جایگزین Apply)
-            elif key == 'C':
+                style = "primary" # دکمه سبز/آبی
+                # دکمه OK را به متد داخلی وصل نمی‌کنیم، پرزنتر آن را مدیریت می‌کند
+                # اما برای اینکه کار کند، فعلا خالی می‌گذاریم یا به یک متد دامی وصل می‌کنیم
+                cmd = None 
+            elif key == 'Clr':
                 style = "danger"
-                cmd = lambda: self._on_keypad_clear()
-            else:
-                style = "secondary"
-                cmd = lambda k=key: self._on_keypad_press(k)
+                cmd = self._on_keypad_clear
 
             btn = ttk.Button(
                 keypad_frame,
                 text=key,
                 bootstyle=style,
-                width=6,
-                padding=(8, 8),
                 command=cmd
             )
-            # دکمه OK را برای دسترسی Presenter ذخیره می‌کنیم (اگر نیاز به لاجیک خاص بود)
+            # دکمه‌ها تمام فضای سلول را پر کنند (Sticky NSEW)
+            btn.grid(row=row, column=col, padx=3, pady=3, sticky="nsew")
+
+            # ثبت دکمه OK
             if key == 'OK':
-                 self.widgets[f"{self.input_key}_apply"] = btn
-            
-            btn.grid(row=row, column=col, padx=5, pady=5)
+                self.widgets[f"{self.input_key}_apply"] = btn
 
-        # ذخیره دکمه‌های +/- برای پرزنتر
-        self.widgets[f"{self.input_key}_minus"] = btn_minus
-        self.widgets[f"{self.input_key}_plus"] = btn_plus
-
-    # --- توابع داخلی کیبورد (Logic View) ---
     def _on_keypad_press(self, key):
-        """وقتی عدد زده می‌شود"""
+        """لاجیک داخلی: آپدیت عدد روی صفحه هنگام تایپ"""
         if self.current_value == "0":
             self.current_value = key
         else:
-            self.current_value += key
-        self.lbl_value.config(text=self.current_value)
+            if len(self.current_value) < 4: # محدودیت ۴ رقم
+                self.current_value += key
+        self.lbl_value.configure(text=self.current_value)
 
     def _on_keypad_clear(self):
-        """پاک کردن (Backspace)"""
-        if len(self.current_value) > 1:
-            self.current_value = self.current_value[:-1]
-        else:
-            self.current_value = "0"
-        self.lbl_value.config(text=self.current_value)
-    
-    def _on_keypad_enter(self):
-        """
-        وقتی OK زده شد، این تابع اجرا می‌شود.
-        نکته: در معماری MVP، دکمه OK ما در self.widgets ذخیره شده
-        و Presenter متد خودش را به آن وصل می‌کند.
-        اما برای اینکه UI آپدیت شود، ما اینجا فعلا کاری نمی‌کنیم
-        و می‌گذاریم Presenter فرمان نهایی را اجرا کند.
-        (ولی چون کامند را اینجا lambda دادیم، باید آن را هندل کنیم یا 
-        از طریق Presenter دکمه را configure کنیم).
-        
-        راه حل ساده: این دکمه OK الان به هیچ جا وصل نیست جز این تابع.
-        ما باید در Presenter به این دکمه گوش دهیم.
-        """
-        # اینجا می‌توانیم یک افکت بصری بدهیم
-        pass
+        """پاک کردن عدد"""
+        self.current_value = "0"
+        self.lbl_value.configure(text=self.current_value)

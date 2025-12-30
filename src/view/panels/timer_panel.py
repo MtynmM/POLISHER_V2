@@ -1,108 +1,159 @@
 import ttkbootstrap as ttk
 import ttkbootstrap.constants as ttk_const
 
-# --- ثابت‌های طراحی ---
-TIME_FONT = ("Segoe UI", 50, "bold")
-COL_VAL_FONT = ("Segoe UI", 20, "bold")
-BTN_PADDING_MAIN = (11, 11)
-BTN_PADDING_SMALL = (12, 12) # برای دکمه‌های تنظیم دقیق
-
 class TimerPanel:
+    """
+    Polisher V2 - Timer & Stopwatch Panel (Diamond Edition)
+    رابط کاربری زمان‌سنجی با دکمه‌های بزرگ و بهینه برای تاچ.
+    """
     def __init__(self, parent_frame, control_widgets_dict):
         self.parent = parent_frame
         self.widgets = control_widgets_dict
+        
+        # تنظیمات ابعاد دکمه‌ها
+        self.SPINNER_BTN_WIDTH = 6
+        self.ACTION_BTN_WIDTH = 12
+        
         self._create_ui()
 
     def _create_ui(self):
-        # 1. ساخت تب‌ها
-        # نکته: استایل تب‌ها باید در main_view.py تنظیم شود، نه اینجا
+        # استفاده از تب (Notebook) برای تفکیک کرنومتر و تایمر
+        # استایل primary برای تب‌ها استفاده می‌شود تا با تم دارک هماهنگ باشد
         notebook = ttk.Notebook(self.parent, bootstyle="primary")
-        notebook.pack(fill=ttk_const.BOTH, expand=True, padx=25, pady=10)
+        notebook.pack(fill=ttk_const.BOTH, expand=True, padx=20, pady=10)
         
-        stopwatch_frame = ttk.Frame(notebook, padding=20)
-        timer_frame = ttk.Frame(notebook, padding=20)
+        # تب 1: کرنومتر
+        stopwatch_tab = ttk.Frame(notebook, padding=20)
+        notebook.add(stopwatch_tab, text="⏱️ STOPWATCH")
         
-        notebook.add(stopwatch_frame, text="⏱️ stopwatch (Stopwatch)")
-        notebook.add(timer_frame, text="⏲️ timer (Countdown)")
+        # تب 2: شمارش معکوس
+        timer_tab = ttk.Frame(notebook, padding=20)
+        notebook.add(timer_tab, text="⏲️ COUNTDOWN")
         
-        self._create_stopwatch(stopwatch_frame)
-        self._create_countdown(timer_frame)
+        # ساخت محتوای تب‌ها
+        self._create_stopwatch_tab(stopwatch_tab)
+        self._create_countdown_tab(timer_tab)
 
-    def _create_stopwatch(self, parent):
-        container = ttk.Frame(parent)
-        container.pack(fill=ttk_const.BOTH,expand=True)
-        
+    def _create_stopwatch_tab(self, parent):
+        """طراحی تب کرنومتر: تمرکز روی نمایشگر بزرگ"""
+        # 1. نمایشگر زمان (بسیار بزرگ)
         lbl_time = ttk.Label(
-            container, 
+            parent, 
             text="00:00:00", 
-            font=TIME_FONT, 
-            bootstyle="primary",
+            font=("Segoe UI", 70, "bold"), # فونت غول‌پیکر برای خوانایی از دور
+            bootstyle="inverse-dark",
             anchor="center"
         )
-        lbl_time.pack(pady=30,fill=ttk_const.X)
+        lbl_time.pack(expand=True, fill=ttk_const.BOTH, pady=(20, 40))
+        
+        # ثبت برای Presenter
         self.widgets["stopwatch_label"] = lbl_time
         
-        btn_frame = ttk.Frame(container)
-        btn_frame.pack(pady=20)
+        # 2. دکمه‌های کنترل (پایین صفحه)
+        btn_frame = ttk.Frame(parent)
+        btn_frame.pack(fill=ttk_const.X, pady=10)
         
-        self._add_btn(btn_frame, "▶ Start", "success", "stopwatch_start")
-        self._add_btn(btn_frame, "⏸ Stop", "warning", "stopwatch_stop")
-        self._add_btn(btn_frame, "Reset", "danger", "stopwatch_reset")
+        # دکمه شروع
+        self._add_action_btn(btn_frame, "▶ START", "success", "stopwatch_start")
+        # دکمه توقف
+        self._add_action_btn(btn_frame, "⏸ STOP", "warning", "stopwatch_stop")
+        # دکمه ریست
+        self._add_action_btn(btn_frame, "↺ RESET", "danger", "stopwatch_reset")
 
-    def _create_countdown(self, parent):
-        container = ttk.Frame(parent)
-        container.pack(expand=True, fill=ttk_const.BOTH)
+    def _create_countdown_tab(self, parent):
+        """طراحی تب شمارش معکوس: تنظیم راحت زمان"""
+        # 1. بخش تنظیم زمان (H : M : S) - وسط چین
+        setup_container = ttk.Frame(parent)
+        setup_container.pack(expand=True, pady=10)
 
-        settings_frame = ttk.Frame(container)
-        settings_frame.pack(pady=10)
+        # اسپینر ساعت
+        self._create_spinner(setup_container, "HOURS", "h", max_val=23)
+        # جداکننده (:)
+        self._create_separator(setup_container)
+        # اسپینر دقیقه
+        self._create_spinner(setup_container, "MINS", "m", max_val=59)
+        # جداکننده (:)
+        self._create_separator(setup_container)
+        # اسپینر ثانیه
+        self._create_spinner(setup_container, "SECS", "s", max_val=59)
 
-        self._create_time_column(settings_frame, "hour", "h")
-        self._create_time_column(settings_frame, "minutes", "m")
-        self._create_time_column(settings_frame, "seconds", "s")
-
-        lbl_countdown = ttk.Label(
-            container, 
-            text="00:00:00", 
+        # 2. نمایشگر زمان کل (زیر تنظیمات)
+        # این لیبل وقتی تایمر شروع شد آپدیت می‌شود
+        lbl_total = ttk.Label(
+            parent, 
+            text="READY TO START", 
             font=("Segoe UI", 20, "bold"), 
-            anchor='center'
+            anchor="center",
+            bootstyle="info"
         )
-        lbl_countdown.pack(pady=5)
-        self.widgets["timer_total_display"] = lbl_countdown
+        lbl_total.pack(pady=(0, 20))
+        self.widgets["timer_total_display"] = lbl_total
 
-        action_frame = ttk.Frame(container)
-        action_frame.pack(pady=5, fill=ttk_const.Y)
+        # 3. دکمه‌های کنترل
+        action_frame = ttk.Frame(parent)
+        action_frame.pack(fill=ttk_const.X, pady=10)
 
-        self._add_btn(action_frame, "▶ Start", "success", "timer_start")
-        self._add_btn(action_frame, "⏸ Stop", "warning", "timer_stop")
-        self._add_btn(action_frame, "Reset", "danger", "timer_reset")
+        self._add_action_btn(action_frame, "▶ START", "success", "timer_start")
+        self._add_action_btn(action_frame, "⏸ STOP", "warning", "timer_stop")
+        self._add_action_btn(action_frame, "↺ RESET", "danger", "timer_reset")
 
-    def _create_time_column(self, parent, label_text, key_name):
+    def _create_spinner(self, parent, label_text, key_suffix, max_val):
+        """یک ویجت تنظیم عدد با دکمه‌های بزرگ بالا/پایین"""
         frame = ttk.Frame(parent)
-        frame.pack(side=ttk_const.LEFT, padx=20)
+        frame.pack(side=ttk_const.LEFT, padx=10)
         
-        ttk.Label(frame, text=label_text, font=("Segoe UI", 12)).pack(pady=5)
-        
-        # دکمه بالا
-        btn_up = ttk.Button(frame, text="▲", bootstyle="secondary-outline", width=5, padding=BTN_PADDING_SMALL)
+        # دکمه افزایش (بالا)
+        btn_up = ttk.Button(
+            frame, text="▲", 
+            bootstyle="secondary-outline", 
+            width=self.SPINNER_BTN_WIDTH,
+            padding=(5, 10) # ارتفاع مناسب برای لمس
+        )
         btn_up.pack(pady=2)
         
+        # نمایش عدد
         lbl_val = ttk.Label(
             frame, text="00", 
-            font=COL_VAL_FONT, 
-            bootstyle="inverse-secondary", 
+            font=("Segoe UI", 28, "bold"), 
             width=3, anchor="center"
         )
         lbl_val.pack(pady=5)
         
-        # دکمه پایین
-        btn_down = ttk.Button(frame, text="▼", bootstyle="secondary-outline", width=5, padding=BTN_PADDING_SMALL)
+        # دکمه کاهش (پایین)
+        btn_down = ttk.Button(
+            frame, text="▼", 
+            bootstyle="secondary-outline", 
+            width=self.SPINNER_BTN_WIDTH,
+            padding=(5, 10)
+        )
         btn_down.pack(pady=2)
         
-        self.widgets[f"timer_{key_name}_lbl"] = lbl_val
-        self.widgets[f"timer_{key_name}_up"] = btn_up
-        self.widgets[f"timer_{key_name}_down"] = btn_down
+        # لیبل راهنما (مثلاً Hours)
+        ttk.Label(frame, text=label_text, font=("Segoe UI", 9), bootstyle="secondary").pack(pady=2)
+        
+        # ثبت در ویجت‌ها برای Presenter
+        self.widgets[f"timer_{key_suffix}_up"] = btn_up
+        self.widgets[f"timer_{key_suffix}_down"] = btn_down
+        self.widgets[f"timer_{key_suffix}_lbl"] = lbl_val
 
-    def _add_btn(self, parent, text, style, key):
-        btn = ttk.Button(parent, text=text, bootstyle=style, padding=BTN_PADDING_MAIN)
-        btn.pack(side=ttk_const.LEFT, padx=15)
+    def _create_separator(self, parent):
+        """دو نقطه جداکننده ساعت و دقیقه"""
+        ttk.Label(
+            parent, text=":", 
+            font=("Segoe UI", 28, "bold"), 
+            bootstyle="secondary",
+            padding=(0, 20) # تنظیم ارتفاع برای هم‌ترازی با اعداد
+        ).pack(side=ttk_const.LEFT, padx=5)
+
+    def _add_action_btn(self, parent, text, style, key):
+        """دکمه عملیاتی استاندارد و هم‌اندازه"""
+        btn = ttk.Button(
+            parent, 
+            text=text, 
+            bootstyle=style, 
+            width=self.ACTION_BTN_WIDTH,
+            padding=(10, 15) # دکمه حجیم
+        )
+        # استفاده از expand=True و side=LEFT برای تقسیم مساوی فضا
+        btn.pack(side=ttk_const.LEFT, padx=10, expand=True, fill=ttk_const.X)
         self.widgets[key] = btn
