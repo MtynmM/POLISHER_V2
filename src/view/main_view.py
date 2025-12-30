@@ -186,14 +186,14 @@ class PolisherView(ttk.Window):
         ).pack(pady=25)
 
         # آیتم‌ها
-        menu_items = [
+        Sidebar_items = [
             ("⏱️ Timer / Stopwatch", ttk_const.INFO, self.show_timer_view),
             ("Set Step Size", ttk_const.PRIMARY, self.show_step_panel),
             ("Set Speed Step", ttk_const.SECONDARY, self.show_speed_panel),
             ("Camera View", ttk_const.DANGER, self.show_camera_view),
         ]
 
-        for text, style, cmd in menu_items:
+        for text, style, cmd in Sidebar_items:
             ttk.Button(
                 self.side_menu, text=text, bootstyle=style,
                 width=20, padding=(10, 15),
