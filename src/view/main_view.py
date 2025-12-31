@@ -5,7 +5,6 @@ from tkinter import messagebox
 # ایمپورت ماژولار پنل‌ها
 from .panels.timer_panel import TimerPanel
 from .panels.control_panel import ControlPanel
-from .panels.manual_panel import ManualPanel
 
 class PolisherView(ttk.Window):
     """
@@ -252,10 +251,6 @@ class PolisherView(ttk.Window):
         
         ttk.Label(container, text="SYSTEM READY", font=("Segoe UI", 48, "bold")).pack()
         ttk.Label(container, text="Select Mode from Menu", font=self.CONSTANTS["FONT_H2"]).pack(pady=10)
-
-    def show_manual_panel(self):
-        self._clear_main_container()
-        ManualPanel(self.main_container, self.control_widgets)
 
     def show_timer_view(self):
         self._clear_main_container()
