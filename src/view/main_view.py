@@ -37,6 +37,9 @@ class PolisherView(ttk.Window):
         # 2. وضعیت‌های داخلی
         self.menu_visible = False
         self.side_menu_pos = -self.CONSTANTS["MENU_WIDTH"]
+        # --- [تغییر جدید] متغیرهای کنترل انیمیشن ---
+        self.target_menu_pos = -self.CONSTANTS["MENU_WIDTH"] # مقصد نهایی کجاست؟
+        self.is_animating = False                            # آیا موتور انیمیشن روشن است؟
         self.control_widgets = {} # مخزن ویجت‌ها برای Presenter
         self.presenter = None
 
@@ -157,6 +160,14 @@ class PolisherView(ttk.Window):
         self.scale_light.pack(side=ttk_const.LEFT, padx=15, pady=8)
         self.control_widgets["light_scale"] = self.scale_light
 
+        self.control_widgets["light_scale"] = self.scale_light
+
+    # [کد جدید] لیبل اختصاصی برای نوتیفیکیشن (وسط نوار)
+        self.lbl_notification = ttk.Label(
+        bar, text="", font=("Segoe UI", 12, "bold"), bootstyle="warning"
+    )
+        self.lbl_notification.pack(side=ttk_const.LEFT, padx=20, fill=ttk_const.X, expand=True)
+
         # چراغ وضعیت اتصال (به صورت LED مجازی)
         # استفاده از inverse-danger باعث می‌شود پس‌زمینه قرمز شود (مثل چراغ)
         self.lbl_contact_light = ttk.Label(
@@ -186,17 +197,17 @@ class PolisherView(ttk.Window):
 
         # آیتم‌ها
         Sidebar_items = [
-            ("⏱️ Timer / Stopwatch", ttk_const.INFO, self.show_timer_view),
-            ("Set Step Size", ttk_const.PRIMARY, self.show_step_panel),
-            ("Set Speed Step", ttk_const.SECONDARY, self.show_speed_panel),
-            ("Camera View", ttk_const.DANGER, self.show_camera_view),
+            ("⏱️Timer/Stopwatch", ttk_const.INFO, 'show_timer_view'),
+            ("∠Set Step Size", ttk_const.PRIMARY, 'show_step_panel'),
+            ("Set Speed Pad", ttk_const.SECONDARY, 'show_speed_panel'),
+            ("📷Camera View", ttk_const.DANGER, 'show_camera_view'),
         ]
 
         for text, style, cmd in Sidebar_items:
             ttk.Button(
                 self.side_menu, text=text, bootstyle=style,
                 width=20, padding=(10, 15),
-                command=lambda c=cmd: self._handle_menu_click(c)
+                command=lambda m=cmd: self._handle_menu_click(getattr(self, m))
             ).pack(pady=8, padx=15, fill=ttk_const.X)
 
         # تنظیم مکان اولیه (مخفی)
@@ -215,20 +226,47 @@ class PolisherView(ttk.Window):
     # ==========================================
 
     def _toggle_menu(self):
-        target = 0 if not self.menu_visible else -self.CONSTANTS["MENU_WIDTH"]
+        """تغییر وضعیت منو بدون تداخل"""
+        # 1. تعیین وضعیت جدید
         self.menu_visible = not self.menu_visible
-        if self.menu_visible: self.side_menu.lift() 
-        self._animate_menu(target)
+        
+        # 2. تعیین مقصد (Target) بر اساس وضعیت
+        if self.menu_visible:
+            self.side_menu.lift() # آوردن به روی صفحه
+            self.target_menu_pos = 0
+        else:
+            self.target_menu_pos = -self.CONSTANTS["MENU_WIDTH"]
+            
+        # 3. استارت زدن موتور انیمیشن (اگر خاموش است)
+        if not self.is_animating:
+            self.is_animating = True
+            self._animate_loop()
 
-    def _animate_menu(self, target_x):
-        if self.side_menu_pos != target_x:
-            dist = target_x - self.side_menu_pos
-            step = dist / 4
-            if abs(step) < 1: step = 1 if dist > 0 else -1
-            if abs(dist) < 2: self.side_menu_pos = target_x
-            else: self.side_menu_pos += step
+    def _animate_loop(self):
+        """حلقه انیمیشن که همیشه به سمت target_menu_pos حرکت می‌کند"""
+        # اگر به مقصد رسیدیم، موتور را خاموش کن
+        if abs(self.side_menu_pos - self.target_menu_pos) < 2:
+            self.side_menu_pos = self.target_menu_pos
             self.side_menu.place(x=int(self.side_menu_pos))
-            self.after(10, lambda: self._animate_menu(target_x))
+            self.is_animating = False
+            return # خروج از حلقه
+
+        # محاسبه فاصله تا هدف
+        dist = self.target_menu_pos - self.side_menu_pos
+        
+        # محاسبه گام حرکت (سرعت متناسب با فاصله برای نرمی)
+        step = dist / 3.5 
+        
+        # جلوگیری از توقف در فواصل کم (حداقل سرعت)
+        if abs(step) < 1: 
+            step = 1 if dist > 0 else -1
+            
+        # حرکت دادن
+        self.side_menu_pos += step
+        self.side_menu.place(x=int(self.side_menu_pos))
+        
+        # تکرار در فریم بعدی (بدون ارسال آرگومان!)
+        self.after(10, self._animate_loop)
 
     def _handle_menu_click(self, command):
         self._toggle_menu()
@@ -258,11 +296,11 @@ class PolisherView(ttk.Window):
 
     def show_step_panel(self):
         self._clear_main_container()
-        ControlPanel(self.main_container, self.control_widgets, "Movement Step (um)", "100", "step")
+        ControlPanel(self.main_container, self.control_widgets, "Movement Step (um)", "100", "step", mode="position")
 
     def show_speed_panel(self):
         self._clear_main_container()
-        ControlPanel(self.main_container, self.control_widgets, "Speed Step (%)", "10", "speed")
+        ControlPanel(self.main_container, self.control_widgets, "Speed Pad (%)", "10", "speed", mode="speed")
         
     def show_camera_view(self):
         self._clear_main_container()
@@ -282,8 +320,9 @@ class PolisherView(ttk.Window):
             self.lbl_contact_light.configure(bootstyle="inverse-danger", text="NO CONTACT")
             
     def show_info_message(self, message):
-        """نمایش پیام موقت در نوار وضعیت (برای ذخیره تنظیمات)"""
-        original_text = self.lbl_status_step.cget("text")
-        self.lbl_status_step.configure(text=message, bootstyle="inverse-success")
-        # بعد از 2 ثانیه به حالت قبل برگردد
-        self.after(2000, lambda: self.lbl_status_step.configure(text=original_text, bootstyle="inverse-secondary"))
+        """نمایش پیام در لیبل اختصاصی بدون دستکاری سایر لیبل‌ها"""
+        # نمایش پیام روی لیبل وسطی
+        self.lbl_notification.configure(text=message)
+
+        # پاک کردن پیام بعد از 3 ثانیه
+        self.after(3000, lambda: self.lbl_notification.configure(text=""))
