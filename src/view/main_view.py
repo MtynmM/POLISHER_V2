@@ -156,17 +156,12 @@ class PolisherView(ttk.Window):
         self.control_widgets["light_toggle"] = self.chk_light
 
         # اسلایدر نور
-        self.scale_light = ttk.Scale(bar, from_=0, to=100, bootstyle="warning", length=300)
-        self.scale_light.pack(side=ttk_const.LEFT, padx=15, pady=8)
+        self.scale_light = ttk.Scale(bar, from_=0, to=100, bootstyle="warning", length=150)
+        self.scale_light.pack(side=ttk_const.LEFT, padx=17, pady=12)
         self.control_widgets["light_scale"] = self.scale_light
 
         self.control_widgets["light_scale"] = self.scale_light
 
-    # [کد جدید] لیبل اختصاصی برای نوتیفیکیشن (وسط نوار)
-        self.lbl_notification = ttk.Label(
-        bar, text="", font=("Segoe UI", 12, "bold"), bootstyle="warning"
-    )
-        self.lbl_notification.pack(side=ttk_const.LEFT, padx=20, fill=ttk_const.X, expand=True)
 
         # چراغ وضعیت اتصال (به صورت LED مجازی)
         # استفاده از inverse-danger باعث می‌شود پس‌زمینه قرمز شود (مثل چراغ)
@@ -197,10 +192,10 @@ class PolisherView(ttk.Window):
 
         # آیتم‌ها
         Sidebar_items = [
-            ("⏱️Timer/Stopwatch", ttk_const.INFO, 'show_timer_view'),
-            ("∠Set Step Size", ttk_const.PRIMARY, 'show_step_panel'),
+            ("Timer/Stopwatch", ttk_const.INFO, 'show_timer_view'),
+            ("Set Step Size", ttk_const.PRIMARY, 'show_step_panel'),
             ("Set Speed Pad", ttk_const.SECONDARY, 'show_speed_panel'),
-            ("📷Camera View", ttk_const.DANGER, 'show_camera_view'),
+            ("Camera View", ttk_const.DANGER, 'show_camera_view'),
         ]
 
         for text, style, cmd in Sidebar_items:
@@ -319,7 +314,7 @@ class PolisherView(ttk.Window):
         else:
             self.lbl_contact_light.configure(bootstyle="inverse-danger", text="NO CONTACT")
             
-    def show_info_message(self, message):
+    #def show_info_message(self, message):
         """نمایش پیام در لیبل اختصاصی بدون دستکاری سایر لیبل‌ها"""
         # نمایش پیام روی لیبل وسطی
         self.lbl_notification.configure(text=message)
