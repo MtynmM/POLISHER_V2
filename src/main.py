@@ -8,7 +8,7 @@ from model.light_model import LightModel
 from presenter.light_presenter import LightPresenter
 
 # --- تنظیمات سخت‌افزار ---
-PIN_LIGHT_GPIO = 18 
+PIN_LIGHT_GPIO = 18 #12 in rpi
 
 def main():
     print("Starting Fiber Polisher System V2...")
