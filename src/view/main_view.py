@@ -160,9 +160,6 @@ class PolisherView(ttk.Window):
         self.scale_light.pack(side=ttk_const.LEFT, padx=17, pady=12)
         self.control_widgets["light_scale"] = self.scale_light
 
-        self.control_widgets["light_scale"] = self.scale_light
-
-
         # چراغ وضعیت اتصال (به صورت LED مجازی)
         # استفاده از inverse-danger باعث می‌شود پس‌زمینه قرمز شود (مثل چراغ)
         self.lbl_contact_light = ttk.Label(
