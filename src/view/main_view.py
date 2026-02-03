@@ -317,7 +317,7 @@ class PolisherView(ttk.Window):
     #def show_info_message(self, message):
         """نمایش پیام در لیبل اختصاصی بدون دستکاری سایر لیبل‌ها"""
         # نمایش پیام روی لیبل وسطی
-        self.lbl_notification.configure(text=message)
+        #self.lbl_notification.configure(text=message)
 
         # پاک کردن پیام بعد از 3 ثانیه
-        self.after(3000, lambda: self.lbl_notification.configure(text=""))
+        #self.after(3000, lambda: self.lbl_notification.configure(text=""))
