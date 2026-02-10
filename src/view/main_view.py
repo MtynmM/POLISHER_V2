@@ -17,7 +17,7 @@ class PolisherView(ttk.Window):
     CONSTANTS = {
         "WIN_SIZE": "1024x600",
         "MENU_WIDTH": 260,     # عرض منو
-        "TOOLBAR_HEIGHT": 80,  # ارتفاع هدر
+        "TOOLBAR_HEIGHT": 70,  # ارتفاع هدر
         "FOOTER_HEIGHT": 45,   # ارتفاع فوتر
         "FONT_H1": ("Segoe UI", 22, "bold"),
         "FONT_H2": ("Segoe UI", 14, "bold"),
@@ -50,9 +50,10 @@ class PolisherView(ttk.Window):
         # 4. رندر نهایی
         self.update_idletasks()
 
-    def set_presenter(self, presenter):
+    def set_presenter(self, light_presenter, lissa_presenter):
         """اتصال به مغز متفکر (Presenter)"""
-        self.presenter = presenter
+        self.light_presenter = light_presenter
+        self.lissa_presenter = lissa_presenter
 
     def _setup_styles(self):
         """تعریف استایل‌های اختصاصی"""
@@ -159,6 +160,13 @@ class PolisherView(ttk.Window):
         self.scale_light = ttk.Scale(bar, from_=0, to=100, bootstyle="warning", length=150)
         self.scale_light.pack(side=ttk_const.LEFT, padx=17, pady=12)
         self.control_widgets["light_scale"] = self.scale_light
+
+        ttk.Separator(bar, orient=ttk_const.VERTICAL).pack(side=ttk_const.LEFT, fill=ttk_const.Y, padx=10)
+        
+        #دکمه لیساژور
+        self.chk_lissa = ttk.Checkbutton(bar, text="lissajous", bootstyle="info-toolbutton")
+        self.chk_lissa.pack(side=ttk_const.LEFT, padx=10, pady=3)
+        self.control_widgets["lissa_toggle"] = self.chk_lissa
 
         # چراغ وضعیت اتصال (به صورت LED مجازی)
         # استفاده از inverse-danger باعث می‌شود پس‌زمینه قرمز شود (مثل چراغ)

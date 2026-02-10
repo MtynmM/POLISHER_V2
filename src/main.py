@@ -1,14 +1,16 @@
 import sys
-import time
 
 # ایمپورت ماژول‌های پروژه
 # نکته: مطمئن شوید فایل‌های __init__.py در پوشه‌ها وجود دارند تا ایمپورت کار کند
 from view.main_view import PolisherView
 from model.light_model import LightModel
+from model.lissa_model import LissaModel
 from presenter.light_presenter import LightPresenter
+from presenter.lissa_presenter import LissaPresenter
 
 # --- تنظیمات سخت‌افزار ---
-PIN_LIGHT_GPIO = 18 #12 in rpi
+PIN_LIGHT_GPIO = 18 #light
+PIN_LISSA_GPIO = 26 #lissa
 
 def main():
     print("Starting Fiber Polisher System V2...")
@@ -19,22 +21,24 @@ def main():
     
     # 2. راه‌اندازی سخت‌افزار (Model)
     light_model = None
+    lissa_model = None
     try:
-        print(f"Initializing Light Hardware on GPIO {PIN_LIGHT_GPIO}...")
         light_model = LightModel(pin_number=PIN_LIGHT_GPIO)
-        
+        lissa_model = LissaModel(pin_number=PIN_LISSA_GPIO)
+
     except Exception as e:
-        print(f"CRITICAL HARDWARE ERROR: {e}")
-        print("Hint: Are you running on a Raspberry Pi with 'gpiozero' installed?")
+        print(f"HARDWARE ERROR: {e}")
         # در صورت خرابی سخت‌افزار، برنامه را می‌بندیم (یا می‌توانیم فقط خطا بدهیم)
         sys.exit(1)
 
     # 3. اتصال مغز متفکر (Presenter)
     # پرزینتر به صورت خودکار رویدادهای دکمه‌ها و اسلایدرها را مدیریت می‌کند
     try:
-        presenter = LightPresenter(model=light_model, view=app)
+        light_presenter = LightPresenter(model=light_model, view=app)
+        lissa_presenter = LissaPresenter(view=app, model= lissa_model)
+
         # در اینجا رفرنس پرزینتر را به ویو هم می‌دهیم (اختیاری، برای توسعه‌های آینده)
-        app.set_presenter(presenter)
+        app.set_presenter(light_presenter = light_presenter, lissa_presenter = lissa_presenter )
         print("Presenter linked successfully.")
         
     except KeyError as e:
@@ -42,7 +46,7 @@ def main():
         sys.exit(1)
 
     # 4. اجرای حلقه اصلی برنامه
-    print("Showing GUI... (Press Ctrl+C to force quit)")
+    print("Showing GUI...")
     try:
         app.mainloop()
         
@@ -52,8 +56,9 @@ def main():
     finally:
         # 5. تمیزکاری و خروج ایمن (Cleanup)
         print("Cleaning up resources...")
-        if light_model:
+        if light_model or lissa_model:
             light_model.close()
+            lissa_model.close()
         print("System shutdown complete. Goodbye!")
 
 if __name__ == "__main__":
