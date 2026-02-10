@@ -15,6 +15,7 @@ class PolisherView(ttk.Window):
     
     # === سیستم طراحی (Design System) ===
     CONSTANTS = {
+        #1024x600    1920x1080
         "WIN_SIZE": "1024x600",
         "MENU_WIDTH": 260,     # عرض منو
         "TOOLBAR_HEIGHT": 70,  # ارتفاع هدر
