@@ -51,10 +51,19 @@ class PolisherView(ttk.Window):
         # 4. رندر نهایی
         self.update_idletasks()
 
-    def set_presenter(self, light_presenter, lissa_presenter):
-        """اتصال به مغز متفکر (Presenter)"""
-        self.light_presenter = light_presenter
-        self.lissa_presenter = lissa_presenter
+    def set_presenter(self, **kwargs):
+        """
+        اتصال هوشمند پرزینترها به ویو.
+        این تابع هر تعداد پرزینتر که بفرستید را قبول می‌کند.
+        """
+        # ذخیره تمام پرزینترها در یک دیکشنری
+        self.presenters = kwargs
+        
+        # دسترسی راحت به پرزینترهای اصلی (جهت استفاده در کدهای دیگر)
+        self.light_presenter = kwargs.get('light_presenter')
+        self.lissa_presenter = kwargs.get('lissa_presenter')
+        self.pad_presenter = kwargs.get('pad_presenter')
+        self.column_presenter = kwargs.get('column_presenter') # <--- این خط مشکل را حل می‌کند
 
     def _setup_styles(self):
         """تعریف استایل‌های اختصاصی"""
@@ -297,11 +306,22 @@ class PolisherView(ttk.Window):
 
     def show_step_panel(self):
         self._clear_main_container()
+        # ساخت پنل گرافیکی
         ControlPanel(self.main_container, self.control_widgets, "Movement Step (um)", "100", "step", mode="position")
+        
+        # >>> بخش جدید <<<
+        # اتصال مجدد پرزینتر ستون (Re-binding)
+        if hasattr(self, 'column_presenter') and self.column_presenter:
+            self.column_presenter.bind_events()
 
     def show_speed_panel(self):
         self._clear_main_container()
+        # ساخت پنل گرافیکی
         ControlPanel(self.main_container, self.control_widgets, "Speed Pad (%)", "10", "speed", mode="speed")
+        # >>> بخش جدید و حیاتی <<<
+        # اگر پرزینتر پد وجود دارد، بگو دوباره دکمه‌ها را پیدا کند
+        if hasattr(self, 'pad_presenter') and self.pad_presenter:
+            self.pad_presenter.bind_events()
         
     def show_camera_view(self):
         self._clear_main_container()
